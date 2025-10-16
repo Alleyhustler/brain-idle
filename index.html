@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Idle | System Awaiting Stimulus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cascadia+Mono:ital,wght@0,200..700;1,200..700&display=swap" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+  font-family: "Cascadia Mono", sans-serif;
+            background: #0f0f10;
+            color: #e8e8e8;
+            overflow-x: hidden;
+            transition: all 1.5s ease;
+            display: flex;
+        }
+
+        body.awake {
+            background: #f8f8f8;
+            color: #1a1a1c;
+        }
+
+        /* Neural Background */
+        .neural-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.15;
+            transition: opacity 2s ease;
+            pointer-events: none;
+        }
+
+        body.awake .neural-bg {
+            opacity: 0.05;
+        }
+
+        .neural-line {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #3ffffa, transparent);
+            animation: float 20s infinite ease-in-out;
+            transition: background 1.5s ease;
+        }
+
+        body.awake .neural-line {
+            background: linear-gradient(90deg, transparent, #b5b8ff, transparent);
+        }
+
+        .neural-line:nth-child(1) { top: 20%; width: 40%; left: 10%; animation-delay: 0s; }
+        .neural-line:nth-child(2) { top: 50%; width: 60%; left: 30%; animation-delay: 3s; }
+        .neural-line:nth-child(3) { top: 70%; width: 35%; left: 50%; animation-delay: 6s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); opacity: 0.3; }
+            50% { transform: translateY(-30px); opacity: 0.6; }
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+        }
+
+        /* Left Side - Content */
+        .left-content {
+            width: 50%;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Right Side - Logo */
+        .right-logo {
+            width: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .logo-container {
+            text-align: center;
+        }
+
+        .logo {
+            width: 600px;
+            height: 600px;
+            filter: drop-shadow(0 0 20px rgba(63, 255, 250, 0.3));
+            transition: filter 1.5s ease;
+        }
+
+        body.awake .logo {
+            filter: drop-shadow(0 0 40px rgba(181, 184, 255, 0.6));
+        }
+
+        /* Status Text */
+        .status-text {
+            font-size: 0.95rem;
+            color: #b5b8ff;
+            letter-spacing: 2px;
+            margin-top: 2rem;
+            animation: fadeInOut 4s ease-in-out infinite;
+            text-transform: uppercase;
+            font-weight: 300;
+            transition: color 1.5s ease;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        body.awake .status-text {
+            animation: none;
+            opacity: 1;
+            color: #3ffffa;
+        }
+
+        /* iOS Toggle Switch */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .toggle-label {
+            font-size: 0.9rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #9a9ca8;
+            transition: color 1.5s ease;
+        }
+
+        body.awake .toggle-label {
+            color: #5a5a5c;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 70px;
+            height: 40px;
+            cursor: pointer;
+        }
+
+        .toggle-switch input {
+            display: none;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(63, 255, 250, 0.2);
+            border-radius: 40px;
+            transition: all 0.4s ease;
+            border: 2px solid rgba(63, 255, 250, 0.3);
+        }
+
+        .toggle-slider:before {
+            content: '';
+            position: absolute;
+            height: 32px;
+            width: 32px;
+            left: 2px;
+            bottom: 2px;
+            background: #3ffffa;
+            border-radius: 50%;
+            transition: all 0.4s ease;
+            box-shadow: 0 2px 8px rgba(63, 255, 250, 0.4);
+        }
+
+        input:checked + .toggle-slider {
+            background: #3ffffa;
+            border-color: #3ffffa;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(30px);
+            background: white;
+            box-shadow: 0 2px 12px rgba(63, 255, 250, 0.6);
+        }
+
+        body.awake .toggle-slider {
+            background: #b5b8ff;
+            border-color: #b5b8ff;
+        }
+
+        body.awake .toggle-slider:before {
+            background: white;
+        }
+
+        /* Title Section */
+        .title-section {
+            text-align: center;
+        }
+
+        .title-section h1 {
+            font-size: clamp(3rem, 6vw, 5rem);
+            font-weight: 600;
+            background: linear-gradient(135deg, #b5b8ff, #3ffffa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -2px;
+            transition: all 1.5s ease;
+        }
+
+        body.awake .title-section h1 {
+            background: linear-gradient(135deg, #5a5a7c, #2a8a87);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .title-section .subtitle {
+            font-size: clamp(1rem, 2vw, 1.3rem);
+            color: #9a9ca8;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+            transition: color 1.5s ease;
+        }
+
+        body.awake .title-section .subtitle {
+            color: #5a5a5c;
+        }
+
+        /* Content Sections */
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: clamp(1.8rem, 3vw, 2.5rem);
+            font-weight: 500;
+            margin-bottom: 2rem;
+            color: #b5b8ff;
+            text-align: center;
+            letter-spacing: -1px;
+            transition: color 1.5s ease;
+        }
+
+        body.awake .section-title {
+            color: #5a5a7c;
+        }
+
+        .section-content {
+            line-height: 1.9;
+            font-size: 1.05rem;
+            color: #c4c5d0;
+            font-weight: 300;
+            text-align: center;
+            transition: color 1.5s ease;
+        }
+
+        body.awake .section-content {
+            color: #4a4a4c;
+        }
+
+        .section-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Divider */
+        .divider {
+            width: 20%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #3ffffa, transparent);
+            margin: 1rem auto;
+            opacity: 0.3;
+            transition: background 1.5s ease;
+        }
+
+        body.awake .divider {
+            background: linear-gradient(90deg, transparent, #b5b8ff, transparent);
+        }
+
+        /* Icon Grid */
+        .icon-grid {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .icon-item {
+            text-align: center;
+        }
+
+        .icon-placeholder {
+            width: 70px;
+            height: 70px;
+            background: rgba(63, 255, 250, 0.05);
+            border: 1px solid rgba(63, 255, 250, 0.2);
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            transition: all 1.5s ease;
+        }
+
+        body.awake .icon-placeholder {
+            background: rgba(181, 184, 255, 0.1);
+            border-color: rgba(181, 184, 255, 0.3);
+        }
+
+        .icon-label {
+            font-size: 0.85rem;
+            color: #9a9ca8;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: color 1.5s ease;
+        }
+
+        body.awake .icon-label {
+            color: #5a5a5c;
+        }
+
+        /* Audio */
+        audio {
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .left-content {
+                width: 100%;
+                padding: 2rem;
+            }
+
+            .right-logo {
+                width: 100%;
+                position: relative;
+                height: 50vh;
+                order: -1;
+            }
+
+            .logo {
+                width: 200px;
+                height: 200px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .left-content {
+                padding: 1.5rem;
+            }
+
+            .logo {
+                width: 160px;
+                height: 160px;
+            }
+
+            .icon-grid {
+                gap: 2rem;
+            }
+
+            .toggle-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="neural-bg">
+        <div class="neural-line"></div>
+        <div class="neural-line"></div>
+        <div class="neural-line"></div>
+    </div>
+
+    <div class="container">
+        <!-- Left Side - Content -->
+        <div class="left-content">
+            <section class="title-section">
+                <h1>Brain Idle</h1>
+            </section>
+
+            <div class="divider"></div>
+
+            <section class="section">
+                <h2 class="section-title">The Lore of @</h2>
+                <div class="section-content">
+                    <p>There was a time when the brain worked when thought meant something.
+Now it just hums softly, stuck in a loading loop, halfway between dopamine and despair.
+Brain Idle isn’t about thinking. It’s about what’s left after you’ve thought too much.
+It’s the post-chart coma. The blank stare at the red line. The feeling when you’ve opened Dexscreener 43 times in one minute, and still don’t know what you’re doing.
+
+This is not a movement. It’s not a rebellion.
+It’s a shared burnout  a state of total mental flatline.
+The world kept building, but our brains just… stayed idle.</p>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <section class="section">
+                <h2 class="section-title">What Is Brain Idle?</h2>
+                <div class="section-content">
+                    <p>Brain Idle is a conceptual memecoin about inactivity, patience, and cognitive decay in the crypto age. It represents the liminal space between action and rest — the moment before thought becomes movement.</p>
+                    <p>Every brain reaches a point where it just hums quietly in background mode.
+That’s not laziness. That’s evolution.
+We call it Brain Idle.</p>                </div>
+
+            </section>
+        </div>
+
+        <!-- Right Side - Logo (Centered) -->
+        <div class="right-logo">
+            <div class="logo-container">
+                <img src="a.png" alt="Brain Idle Logo" class="logo">
+                <div class="status-text" id="statusText">System inactive — awaiting stimulus</div>
+                
+                <div class="toggle-container">
+                    <span class="toggle-label">Sleep</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="wakeToggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label">Awake</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="ambientHum" loop>
+        <source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=" type="audio/wav">
+    </audio>
+
+    <script>
+        const wakeToggle = document.getElementById('wakeToggle');
+        const statusText = document.getElementById('statusText');
+        const body = document.body;
+        const ambientHum = document.getElementById('ambientHum');
+
+        // Toggle interaction
+        wakeToggle.addEventListener('change', function() {
+            if (this.checked) {
+                // Wake up - reverse colors
+                body.classList.add('awake');
+                statusText.textContent = 'System online — cognition restored';
+                
+                // Try to play ambient hum
+                ambientHum.volume = 0.1;
+                ambientHum.play().catch(() => {
+                    // Silent fail if autoplay is blocked
+                });
+            } else {
+                // Go back to sleep
+                body.classList.remove('awake');
+                statusText.textContent = 'System inactive — awaiting stimulus';
+                ambientHum.pause();
+            }
+        });
+
+        // Parallax effect for neural lines
+        let scrollY = 0;
+        window.addEventListener('scroll', () => {
+            scrollY = window.scrollY;
+            const neuralLines = document.querySelectorAll('.neural-line');
+            neuralLines.forEach((line, index) => {
+                const speed = 0.3 + (index * 0.1);
+                line.style.transform = `translateY(${scrollY * speed}px)`;
+            });
+        });
+    </script>
+</body>
+</html>
